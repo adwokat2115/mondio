@@ -2,7 +2,9 @@
     animation: animation 5s infinite;
     
 }
-
+.wybuch{
+    animation: animation1 5s infinite;
+}
 
 @keyframes animation {
     0%{
@@ -17,5 +19,18 @@
     }
     100%{
         transform: rotateZ(360deg);
+        
+    }
+}
+@keyframes animation1 {
+    0%{
+        opacity: 0%;
+    }
+    80%{
+        opacity:  0%;
+    }
+    100%{
+        opacity: 100%;
+        
     }
 }
