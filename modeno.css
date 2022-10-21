@@ -1,11 +1,18 @@
 .mondeo{
     animation: animation 5s infinite;
-    
+    position: absolute;
+    margin-top: 100px;
 }
 .wybuch{
-    animation: animation1 5s infinite;
-}
+    animation: animation1 5s infinite;;
+    width: 275px;
+    height: 275px;
 
+    
+}
+.drzewo{
+    margin-top: 60px;
+}
 @keyframes animation {
     0%{
         margin-right: 400px;
