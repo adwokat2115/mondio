@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        canvas{
+            background-color: white;
+            display: block;
+            margin: 0 auto;
+            border: 2px black solid;
+        }
+        h1{
+            text-align: center;
+            
+        }
+        p{
+            text-align: center;
+            font-size: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Przygody Forda Mondeo</h1>
+    <canvas id="gra" width="1280px" height="580px"></canvas>
+    <p id="restart"></p>
+    <script>
+        var can = document.getElementById("gra");
+        var ctx = can.getContext("2d");
+        var GrafikaPlatformy = new Image();
+        GrafikaPlatformy.src = "tło.jpg"
+        var plat = []
+        plat[0] = new Platforma(0,500,750,80); //ziemia
+        plat[1] = new Platforma(730,500,750,80); //ziemia
+        plat[2] = new Platforma(120,300,100,40); //1
+        plat[3] = new Platforma(310,360,100,40); //2
+        plat[4] = new Platforma(500,430,100,40); //3
+        plat[5] = new Platforma(290,240,100,40); //4
+        plat[6] = new Platforma(730,300,100,40); //5
+        plat[7] = new Platforma(660,110,100,40); //6
+        plat[8] = new Platforma(1000,390,100,40); //7
+        plat[9] = new Platforma(200,70,100,40); //8
+        plat[10] = new Platforma(1160,320,100,40); //9
+        plat[11] = new Platforma(470,180,100,40); // pusty
+        plat[12] = new Platforma(500,70,50,40); // pusty
+        plat[13] = new Platforma(380,70,50,40); // pusty
+        var GrafikaMonety = new Image();
+        GrafikaMonety.src = "drzewo.jpg"
+        var mon = []
+        mon[0] = new Moneta(150,250,35,35) //1
+        mon[1] = new Moneta(342,300,35,35) 
+        mon[2] = new Moneta(530,370,35,35)
+        mon[3] = new Moneta(320,180,35,35) //4
+        mon[4] = new Moneta(760,240,35,35)
+        mon[5] = new Moneta(690,60,35,35) //6
+        mon[6] = new Moneta(1030,330,35,35)
+        mon[7] = new Moneta(230,30,35,35) //8
+        mon[8] = new Moneta(1190,260,35,35)
+        var przesz = [];
+        przesz[0] = new Przeszkoda(800,170,35,40,33,"rondo.jpg");
+        przesz[1] = new Przeszkoda(450,70,35,40,33,"rondo.jpg");
+        przesz[2] = new Przeszkoda(325,70,35,40,34, "rondo.jpg")
+        var Grafikapostaci = new Image();
+        Grafikapostaci.src = "mondeo.png"
+        var xPos = 10;
+        var yPos = 400;
+        var szerPos = 80;
+        var wysPos = 50;
+        var hp = 100;
+        var hp1 = 0
+        var dx = 0;
+        var dy = 0;
+        var wysSkok = 120
+        var licznik = 0
+        var czySaMonety = false;
+        var czySaPrzeszkody = false;
+        // var GrafikaSerca = new Image();
+        // GrafikaSerca.src = "serce.png"
+        // var serce = [];
+        // serce[0] = new Serce(1098,10,50,50);
+        // serce[1] = new Serce(1149,10,50,50);
+        // serce[2] = new Serce(1200,10,50,50);               
+        function rysuj(){
+            ctx.clearRect(0,0,can.width,can.height);
+            rysujplatformy();
+            rysujmonety();
+            rysujprzeszkody();
+            //rysujserca();
+            ctx.drawImage(Grafikapostaci, xPos, yPos, szerPos, wysPos);
+            grawitacja();
+            xPos = xPos + dx;
+            kolizjazMoneta();
+            kolizjazPrzeszkoda();
+            czyKoniec();
+        }
+
+        setInterval(rysuj, 10);
+
+        document.addEventListener("keydown", ruchPostaci, false);
+        document.addEventListener("keyup", stop, false);
+        
+        function ruchPostaci(e){
+            if(e.keyCode == 65){
+                dx=-2;
+            }
+            else if(e.keyCode == 68){
+                dx=2;
+            }
+            else if(e.keyCode == 87 && dy == 0){
+                dy=-3;
+            }
+        }
+        
+        function stop(e){
+            if(e.keyCode == 65){
+                dx = 0;
+            }
+            else if(e.keyCode == 68){
+                dx = 0;
+            }
+        }
+
+        function Platforma (px, py, pszer, pwys){
+            this.x = px;
+            this.y = py;
+            this.szer = pszer;
+            this.wys = pwys;
+        }
+
+        function rysujplatformy(){
+            for(i=0;i<plat.length;i++){
+                ctx.drawImage(GrafikaPlatformy, plat[i].x, plat[i].y, plat[i].szer, plat[i].wys);
+            }
+        }
+
+        function Moneta(px,py,pszer,pwys){
+            this.x = px;
+            this.y = py;
+            this.szer = pszer;
+            this.wys = pwys;
+            this.czywidoczna = true;
+        }
+        function rysujmonety(){
+            for(i=0;i<mon.length;i++){
+                if(mon[i].czywidoczna == true){
+                    ctx.drawImage(GrafikaMonety, mon[i].x, mon[i].y, mon[i].szer, mon[i].wys);
+                }
+            }
+        }
+        function Przeszkoda(px,py,pszer,pwys, pzabiera, pnazwa){
+            this.x = px;
+            this.y = py;
+            this.szer = pszer;
+            this.wys = pwys;
+            this.czywidoczna = true;
+            this.zabiera = pzabiera;
+            this.GrafikaPrzeszkody = new Image();
+            this.GrafikaPrzeszkody.src = pnazwa;
+        }
+        function rysujprzeszkody(){
+            for(i=0;i<przesz.length;i++){
+                if (przesz[i].czywidoczna == true){
+                    ctx.drawImage(przesz[i].GrafikaPrzeszkody, przesz[i].x,przesz[i].y,przesz[i].szer,przesz[i].wys,);
+                }
+            }
+        }
+        function grawitacja(){
+            if(dy >= 0){   
+                dy = 3;
+                for (i=0; i<plat.length;i++){
+                    if(yPos + wysPos > plat[i].y &&
+                    yPos + 0.8*wysPos < plat[i].y &&
+                    xPos + szerPos/2 > plat[i].x &&
+                    xPos + szerPos/2 <plat[i].x + plat[i].szer){
+                        dy=0;
+                    }
+                }
+            }
+            else{
+                licznik = licznik + 3;
+                if(licznik >= wysSkok){
+                    dy = 0;
+                    licznik = 0;
+                }
+            }
+            yPos=yPos+dy;
+            
+        }
+        function kolizjazMoneta(){
+            for(i=0;i<mon.length;i++){
+                if(yPos < mon[i].y + mon[i].wys/2 &&
+                yPos + wysPos > mon[i].y + mon[i].wys/2 &&
+                xPos < mon[i].x + mon[i].szer/2 &&
+                xPos + szerPos > mon[i].x + mon[i].szer/2){
+                    mon[i].czywidoczna = false;
+                }
+            }
+        }
+        function kolizjazPrzeszkoda(){
+            for(i=0;i<przesz.length;i++){
+                if(yPos < przesz[i].y + przesz[i].wys/2 &&
+                yPos + wysPos > przesz[i].y + przesz[i].wys/2 &&
+                xPos < przesz[i].x + przesz[i].szer/2 &&
+                xPos + szerPos > przesz[i].x + przesz[i].szer/2 &&
+                przesz[i].czywidoczna == true){
+                    przesz[i].czywidoczna = false;
+                    hp = hp - przesz[i].zabiera;
+                    if (hp <= 0){
+                        location.reload();
+                    }
+                }
+            }
+        }
+        function czyKoniec(){
+            czySaMonety = false
+            for(i=0;i<mon.length; i++){
+                if(mon[i].czywidoczna == true){
+                    czySaMonety = true;
+                }
+            }
+            if(czySaMonety == false){
+                ctx.clearRect(0,0,can.width,can.height);
+                ctx.font = "120px Georgia"
+                ctx.fillText("WYGRWASZ", 250, 300);
+                
+            }
+        }
+        // function Serce(px,py,pszer,pwys){
+        //     this.x = px;
+        //     this.y = py;
+        //     this.szer = pszer;
+        //     this.wys = pwys;
+        //     this.czywidoczna = true;
+        // }
+        // function rysujserca(){
+        //     for(i=0;i<serce.length;i++){
+        //         ctx.drawImage(GrafikaSerca, serce[i].x, serce[i].y, serce[i].szer, serce[i].wys);
+        //     }
+        // }
+       
+    </script>
+</body>
+</html>
